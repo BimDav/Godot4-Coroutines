@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://cg0ysa5ahuumo"]
+
+[sub_resource type="GDScript" id="GDScript_bdn35"]
+script/source = "extends Node2D
+
+
+
+func _ready() -> void:
+	var corout: = Coroutine.new()
+	corout.resumable_call(count.bind(2, 7))
+	while not corout.is_completed:
+		await get_tree().create_timer(1).timeout
+		corout.resume()
+	print(\"result = %s\" % corout.return_value)
+
+
+func count(corout: Coroutine, start: int, end: int) -> int:
+	for i in range(start, end):
+		print(i)
+		await corout.resume_signal
+	print(\"end\")
+	return end - start
+"
+
+[node name="ResumeExample" type="Node2D"]
+script = SubResource("GDScript_bdn35")
