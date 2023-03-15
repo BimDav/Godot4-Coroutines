@@ -13,9 +13,16 @@ The Resume pattern is used to stop the execution in a subfunction, which will wa
 - Resume the execution using `coroutine.resume()`
 - Once `my_resumable_function()`has finished, `coroutine.is_completed`is set to `true`and the return value of `my_resumable_function()`is in `coroutine.return_value`
 
-## Join ##
-Join is used to launch the execution of multiple functions, then waiting for them all to finish before continuing execution. See `JoinExample.tscn`.
+## Join All ##
+Join All is used to launch the execution of multiple functions, then waiting for them all to finish before continuing execution. See `JoinAllExample.tscn`.
 
 - Create a Coroutine using `var coroutine := Coroutine.new()`
 - Add a function you want to differ awaiting on using `coroutine.add_future(my_joinable_function)`
-- When all functions are added, use `await coroutine.join()` to wait for them all to finish
+- When all functions are added, use `await coroutine.join_all()` to wait for them all to finish
+
+## Join Either ##
+Join Either is used to launch the execution of multiple functions, then waiting for at least one to finish before continuing execution. See `JoinEitherExample.tscn`.
+
+- Create a Coroutine using `var coroutine := Coroutine.new()`
+- Add a function you want to differ awaiting on using `coroutine.add_future(my_joinable_function)`
+- When all functions are added, use `await coroutine.join_either()` to wait for at least one of them to finish
