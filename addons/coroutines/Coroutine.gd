@@ -8,7 +8,7 @@ var is_completed: = false
 
 # For join functionality
 signal _join()
-var _futures_count: = -1
+var _ended_count: = -1
 
 var return_value
 
@@ -25,24 +25,34 @@ func resume() -> void:
 	resume_signal.emit()
 
 
-func add_future(callable: Callable) -> void:
+func add_future(param) -> void:
+	assert(param is Callable or param is Signal, "Can only wait on Signal or Callable")
 	# init
-	if _futures_count < 0:
-		_futures_count = 0
+	if _ended_count < 0:
+		_ended_count = 0
 		return_value = []
 
 	var index: int = return_value.size()
 	return_value.append(null)
-	_futures_count += 1
-	return_value[index] = await callable.call()
-	_futures_count -= 1
-	if _futures_count == 0:
+	if param is Callable:
+		return_value[index] = await param.call()
+	else:
+		await param
+	_ended_count += 1
+	if _ended_count == return_value.size():
 		_join.emit()
 
 
-func join() -> Array:
-	if _futures_count <= 0:
+func join_all() -> Array:
+	if _ended_count == return_value.size():
 		return return_value
 	await _join
 	return return_value
-	
+
+
+func join_either() -> Array:
+	if _ended_count > 0:
+		return return_value
+	_ended_count = return_value.size() - 1
+	await _join
+	return return_value

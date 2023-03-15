@@ -6,10 +6,12 @@ script/source = "extends Node2D
 
 func _ready() -> void:
 	var corout: = Coroutine.new()
+	var time_start: = Time.get_ticks_msec()
 	for i in 10:
 		corout.add_future(_random_timing)
-	var values = await corout.join()
+	var values = await corout.join_all()
 	print(values)
+	print(\"%ss passed\" % ((Time.get_ticks_msec() - time_start) / 1000.0))
 
 
 func _random_timing() -> float:
@@ -20,5 +22,5 @@ func _random_timing() -> float:
 	return timing
 "
 
-[node name="JoinExample" type="Node2D"]
+[node name="JoinAllExample" type="Node2D"]
 script = SubResource("GDScript_rgnqe")
