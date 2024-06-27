@@ -11,6 +11,10 @@ signal _join()
 var _ended_count: = -1
 
 var return_value
+var futures_ended: Array[bool]
+
+# prevents godot from logging a false error
+var self_ref: RefCounted
 
 
 func resumable_call(callable: Callable) -> void:
@@ -31,19 +35,25 @@ func add_future(param) -> void:
 	if _ended_count < 0:
 		_ended_count = 0
 		return_value = []
+		futures_ended = []
 
 	var index: int = return_value.size()
 	return_value.append(null)
+	futures_ended.append(false)
 	if param is Callable:
 		return_value[index] = await param.call()
+		futures_ended[index] = true
 	else:
-		await param
+		return_value[index] = await param
+		futures_ended[index] = true
 	_ended_count += 1
 	if _ended_count == return_value.size():
 		_join.emit()
 
 
 func join_all() -> Array:
+	if _ended_count < 0 or (not return_value):
+		return []
 	if _ended_count == return_value.size():
 		return return_value
 	await _join
@@ -51,8 +61,15 @@ func join_all() -> Array:
 
 
 func join_either() -> Array:
+	if _ended_count < 0 or (not return_value):
+		return []
 	if _ended_count > 0:
 		return return_value
+	self_ref = self
 	_ended_count = return_value.size() - 1
 	await _join
+	# this way the Coroutine will leave long enough for all
+	# futures ending this frame to end correctly (if not it will work correctly
+	# but godot will log an error)
+	set_deferred("self_ref", null)
 	return return_value
